@@ -25,14 +25,14 @@ def print_devices():
 def get_realtek():
     mics = sc.all_microphones(include_loopback=True)
     for i in range(len(mics)):
-        if "Realtek(R) Audio" in mics[i].name:
+        # print(mics[i].name)
+        if "Realtek" in mics[i].name:
             return mics[i]
 
 
 def record(duration=5, save_path="output.wav"):
     # mics = sc.all_microphones(include_loopback=True)
     # default_mic = mics[1]
-
     default_mic = get_realtek()
 
     sample_rate = 44100
@@ -53,4 +53,5 @@ def convert_to_mp3(input_path, output_path):
 
 
 if __name__ == "__main__":
-    print_devices()
+    # print_devices()
+    print(get_realtek())

@@ -27,14 +27,18 @@ def pretty_print(res):
     subtitle = track.get('subtitle', '')
     images = track.get('images', {}).get('coverarthq', 'No image found')
     name = track.get('share', {}).get('subject', '')
-    audio_url = track.get('hub', {}).get('actions', [{}])[1].get('uri', '')
+    audio_url = track.get('hub', {}).get('actions', [{}, {}])[1].get('uri', '')
     text = track.get('sections', [{}])[1].get('text', 'No lyrics found')
     meta_title = track.get('sections', [{}])[0].get('metadata', [{}])[0].get('title',
                                                                              'No meta title found')
     meta_text = track.get('sections', [{}])[0].get('metadata', [{}])[0].get('text',
                                                                             'No meta text found')
-    label = track.get('sections', [{}])[0].get('metadata', [{}])[1].get('text', 'No label found')
-    data = track.get('sections', [{}])[0].get('metadata', [{}])[2].get('text', 'No data found')
+    if len(track.get('sections', [{}])[0].get('metadata', [{}, {}, {}])) <= 1:
+        label = "No label found"
+        data = "No data found"
+    else:
+        label = track.get('sections', [{}])[0].get('metadata', [{}, {}])[1].get('text', 'No label found')
+        data = track.get('sections', [{}])[0].get('metadata', [{}, {}, {}])[2].get('text', 'No data found')
 
     print(f"Title: {title}")
     print(f"Subtitle: {subtitle}")
@@ -87,7 +91,7 @@ def printProgressBar(iteration, total, prefix='', suffix='', decimals=1, length=
         print()
 
 
-def download(url, file_name="DOWLNOADED_FILE"):
+def download(url, file_name="DOWNLOADED_FILE"):
     r = requests.get(url, stream=True)
 
     total_size = int(r.headers.get('content-length', 0))
