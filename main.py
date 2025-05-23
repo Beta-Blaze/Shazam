@@ -6,6 +6,7 @@ import shutil
 
 from ShazamAPI import Shazam
 from record import record, convert_to_mp3
+from audio_settings import select_audio_device, get_selected_device, load_settings, get_recording_duration, select_recording_duration
 
 
 def recognize(file_path):
@@ -67,6 +68,8 @@ def main(duration, recording=True, input_file="output.mp3"):
     res = recognize(input_file)
     # print(res)
     pretty_print(res)
+    os.remove("output.wav")
+    os.remove("output.mp3")
 
 
 def printProgressBar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█', printEnd="\r"):
@@ -152,30 +155,80 @@ def ffmpeg_checker():
     exit()
 
 
+def show_settings_menu():
+    """Меню настроек"""
+    while True:
+        print("\n--- НАСТРОЙКИ ---")
+        print("1. Изменить длительность записи")
+        print("2. Выбрать аудиоустройство")
+        print("3. Показать текущие настройки")
+        print("0. Вернуться в главное меню")
+
+        choice = input("Выберите опцию: ").strip()
+
+        if choice == "1":
+            select_recording_duration()
+
+        elif choice == "2":
+            device = select_audio_device()
+            if device:
+                print(f"Аудиоустройство изменено на: {device['name']}")
+            else:
+                print("Аудиоустройство не изменено")
+
+        elif choice == "3":
+            settings = load_settings()
+            current_device = get_selected_device()
+            current_duration = get_recording_duration()
+            print(f"\nТекущие настройки:")
+            print(f"Аудиоустройство: {current_device['name'] if current_device else 'Не выбрано'}")
+            print(f"Длительность записи: {current_duration} секунд")
+
+        elif choice == "0":
+            break
+
+        else:
+            print("Неверный выбор, попробуйте снова")
+
+    return None
+
+
 if __name__ == "__main__":
     ffmpeg_checker()
 
     print("PC shazam")
-    duration = 5
+    
+    # Получить сохраненную длительность записи
+    duration = get_recording_duration()
+
+    # Показать текущие настройки при запуске
+    current_device = get_selected_device()
+    if current_device:
+        print(f"Текущее аудиоустройство: {current_device['name']}")
+    print(f"Длительность записи: {duration} секунд")
+
     while True:
-        print("Press Enter to recognize, or 'q' to quit or 's' to settings or 'r' to recognize")
-        inp = input()
+        print("\nВыберите действие:")
+        print("Enter - записать и распознать")
+        print("'s' - настройки")
+        print("'r' - распознать файл")
+        print("'q' - выход")
+
+        inp = input("Ввод: ").strip().lower()
+
         if inp == 'q':
-            try:
-                os.remove("output.mp3")
-                os.remove("output.wav")
-            except Exception as e:
-                pass
             break
         elif inp == 's':
-            print("Settings")
-            print("Enter duration of recording")
-            duration = int(input())
+            show_settings_menu()
+            # Обновить длительность после изменения настроек
+            duration = get_recording_duration()
         elif inp == 'r':
-            print("Recognizing")
-            print("Enter path to file (.mp3)")
-            path = input()
-            main(duration, input_file=path, recording=False)
+            print("Распознавание файла")
+            path = input("Введите путь к файлу (.mp3): ").strip()
+            if os.path.exists(path):
+                main(duration, input_file=path, recording=False)
+            else:
+                print("Файл не найден")
         else:
             main(duration)
         print("\n")
